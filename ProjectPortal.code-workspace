@@ -6,12 +6,11 @@
 		},
 		{
 			"name": "UE5",
-			"path": "/Users/Shared/Epic Games/UE_5.1"
+			"path": "/Users/Shared/Epic Games/UE_5.2"
 		}
 	],
 	"settings": {
-    "typescript.tsc.autoDetect": "off",
-    "UEIntellisenseFixes.compiler.intellisenseMode": "macos-clang-arm64"
+		"typescript.tsc.autoDetect": "off"
 	},
 	"extensions": {
 		"recommendations": [

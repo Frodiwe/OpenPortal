@@ -11,9 +11,9 @@ class PROJECTPORTAL_API APortal : public AActor
 {
 	GENERATED_BODY()
 private:
-  FVector LastPosition;
+  FVector LastPosition = FVector::Zero();
   
-  bool LastInFront;
+  bool LastInFront = false;
 
 protected:
   UPROPERTY()

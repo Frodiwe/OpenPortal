@@ -68,14 +68,30 @@ void APortal::Tick(float DeltaTime)
 
   auto Character = GetWorld()->GetFirstPlayerController()->GetCharacter();
 
+  if (Character == nullptr)
+  {
+    return;
+  }
+
   if (
-    Character != nullptr
-    && UKismetMathLibrary::IsPointInBox(Character->GetActorLocation(), Area->GetComponentLocation(), Area->GetScaledBoxExtent())
-    && IsPointCrossingPortal(Character->GetActorLocation(), GetActorLocation(), GetActorForwardVector() * -1)
+    // UKismetMathLibrary::IsPointInBox(Character->GetActorLocation(), Area->GetComponentLocation(), Area->GetScaledBoxExtent())
+    IsPointCrossingPortal(Character->GetActorLocation(), GetActorLocation(), GetActorUpVector())
   )
   {
+    auto PortalPlane = FPlane{GetActorLocation(), GetActorUpVector()};
+
+    UE_LOG(LogTemp, Warning, TEXT("does intersect: %s"), DoesIntersect(LastPosition, Character->GetActorLocation(), PortalPlane) ? *FString{"true"} : *FString{"false"});
+    UE_LOG(LogTemp, Warning, TEXT("\tlast position: %s"), *LastPosition.ToString());
+    UE_LOG(LogTemp, Warning, TEXT("\tcurr position: %s"), *Character->GetActorLocation().ToString());
+    UE_LOG(LogTemp, Warning, TEXT("\tportal plane: %s"), *PortalPlane.ToString());
+    UE_LOG(LogTemp, Warning, TEXT("is in front: %s"), IsInFront(Character->GetActorLocation(), PortalPlane) ? *FString{"true"} : *FString{"false"});
+    UE_LOG(LogTemp, Warning, TEXT("last in front: %s"), LastInFront ? *FString{"true"} : *FString{"false"});
+
     TeleportActor(Character);
   }
+
+  LastInFront = IsInFront(Character->GetActorLocation(), FPlane{GetActorLocation(), GetActorUpVector()});
+  LastPosition = Character->GetActorLocation();
 }
 
 void APortal::UpdateView(APlayerCameraManager* CameraManager)
@@ -212,13 +228,9 @@ UTextureRenderTarget2D* APortal::GeneratePortalTexture()
 
 bool APortal::IsPointCrossingPortal(const FVector& Point, const FVector& PortalLocation, const FVector& PortalNormal)
 {
-  const auto PortalPlane = FPlane(PortalLocation, PortalNormal);
-  auto IsCrossing = DoesIntersect(LastPosition, Point, PortalPlane) && !IsInFront(Point, PortalPlane) && LastInFront;
+  const auto PortalPlane = FPlane{PortalLocation, PortalNormal};
 
-  LastInFront = IsInFront(Point, PortalPlane);
-  LastPosition = Point;
-
-  return IsCrossing;
+  return DoesIntersect(LastPosition, Point, PortalPlane) && !IsInFront(Point, PortalPlane) && LastInFront;
 }
 
 bool APortal::IsInFront(const FVector& Point, const FPlane& PortalPlane) const
