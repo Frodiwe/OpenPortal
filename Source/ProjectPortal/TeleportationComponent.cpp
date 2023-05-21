@@ -10,8 +10,7 @@ UTeleportationComponent::UTeleportationComponent()
 
 FPlane UTeleportationComponent::GetOwnerPlane() const
 {
-  // should be forward vector
-  return FPlane{GetOwner()->GetActorLocation(), GetOwner()->GetActorUpVector()};
+  return FPlane{GetOwner()->GetActorLocation(), -GetOwner()->GetActorForwardVector()};
 }
 
 bool UTeleportationComponent::IsInFront(const FVector &Point, const FPlane &PortalPlane) const

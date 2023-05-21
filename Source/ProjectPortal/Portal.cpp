@@ -63,21 +63,21 @@ void APortal::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-  // auto Character = GetWorld()->GetFirstPlayerController()->GetCharacter();
+  auto Character = GetWorld()->GetFirstPlayerController()->GetCharacter();
 
-  // if (Character == nullptr)
-  // {
-  //   return;
-  // }
+  if (Character == nullptr)
+  {
+    return;
+  }
 
   UpdateView(GetPlayerCameraManager());
 
-  // if (Teleportation->HasCrossedSinceLastTracked(Character->GetActorLocation()))
-  // {
-  //   Teleportation->Teleport(Character, Target);
-  // }
+  if (Teleportation->HasCrossedSinceLastTracked(Character->GetActorLocation()))
+  {
+    Teleportation->Teleport(Character, Target);
+  }
 
-  // Teleportation->UpdateTracking(Character);
+  Teleportation->UpdateTracking(Character);
 }
 
 void APortal::UpdateView(APlayerCameraManager* CameraManager)
