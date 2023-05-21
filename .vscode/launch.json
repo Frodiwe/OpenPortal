@@ -1,6 +1,7 @@
 {
 	"version": "0.2.0",
 	"configurations": [
+    
 		{
 			"name": "Launch ProjectPortal (Debug)",
 			"request": "launch",
@@ -88,7 +89,7 @@
 			"name": "Generate Project Files",
 			"type": "coreclr",
 			"request": "launch",
-			"program": "/Users/Shared/Epic Games/UE_5.2/Engine/Build/BatchFiles/RunUBT.bat",
+			"program": "/Users/Shared/Epic Games/UE_5.2/Engine/Build/BatchFiles/RunUBT.sh",
 			"args": [
 				"-projectfiles",
 				"-vscode",

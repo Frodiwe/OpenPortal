@@ -7,6 +7,8 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Tool.h"
+#include "TeleportationComponent.h"
 
 APortal::APortal()
 {
@@ -16,14 +18,10 @@ APortal::APortal()
   PortalRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PortalRoot"));
   SetRootComponent(PortalRoot);
 
-  Gate = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PortalGateMesh"));
-  Gate->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-
-  View = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("PortalSceneCapture"));
+  View = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCapture"));
   View->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
-  Area = CreateDefaultSubobject<UBoxComponent>(TEXT("PortalArea"));
-  Area->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+  Teleportation = CreateDefaultSubobject<UTeleportationComponent>(TEXT("Teleportation"));
 
   SetupView();
 }
@@ -32,7 +30,8 @@ void APortal::SetupView()
 {
   View->bCaptureEveryFrame = false;
   View->bCaptureOnMovement = false;
-  View->LODDistanceFactor = 3; //Force bigger LODs for faster computations
+  // Force bigger LODs for faster computations
+  View->LODDistanceFactor = 3;
   
   View->TextureTarget = nullptr;
   View->bEnableClipPlane = true;
@@ -64,34 +63,21 @@ void APortal::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+  // auto Character = GetWorld()->GetFirstPlayerController()->GetCharacter();
+
+  // if (Character == nullptr)
+  // {
+  //   return;
+  // }
+
   UpdateView(GetPlayerCameraManager());
 
-  auto Character = GetWorld()->GetFirstPlayerController()->GetCharacter();
+  // if (Teleportation->HasCrossedSinceLastTracked(Character->GetActorLocation()))
+  // {
+  //   Teleportation->Teleport(Character, Target);
+  // }
 
-  if (Character == nullptr)
-  {
-    return;
-  }
-
-  if (
-    // UKismetMathLibrary::IsPointInBox(Character->GetActorLocation(), Area->GetComponentLocation(), Area->GetScaledBoxExtent())
-    IsPointCrossingPortal(Character->GetActorLocation(), GetActorLocation(), GetActorUpVector())
-  )
-  {
-    auto PortalPlane = FPlane{GetActorLocation(), GetActorUpVector()};
-
-    UE_LOG(LogTemp, Warning, TEXT("does intersect: %s"), DoesIntersect(LastPosition, Character->GetActorLocation(), PortalPlane) ? *FString{"true"} : *FString{"false"});
-    UE_LOG(LogTemp, Warning, TEXT("\tlast position: %s"), *LastPosition.ToString());
-    UE_LOG(LogTemp, Warning, TEXT("\tcurr position: %s"), *Character->GetActorLocation().ToString());
-    UE_LOG(LogTemp, Warning, TEXT("\tportal plane: %s"), *PortalPlane.ToString());
-    UE_LOG(LogTemp, Warning, TEXT("is in front: %s"), IsInFront(Character->GetActorLocation(), PortalPlane) ? *FString{"true"} : *FString{"false"});
-    UE_LOG(LogTemp, Warning, TEXT("last in front: %s"), LastInFront ? *FString{"true"} : *FString{"false"});
-
-    TeleportActor(Character);
-  }
-
-  LastInFront = IsInFront(Character->GetActorLocation(), FPlane{GetActorLocation(), GetActorUpVector()});
-  LastPosition = Character->GetActorLocation();
+  // Teleportation->UpdateTracking(Character);
 }
 
 void APortal::UpdateView(APlayerCameraManager* CameraManager)
@@ -101,72 +87,14 @@ void APortal::UpdateView(APlayerCameraManager* CameraManager)
     return;
   }
 
-  View->SetWorldLocation(ConvertLocationToActorSpace(CameraManager->GetCameraLocation(), Gate, Target));
-  View->SetWorldRotation(ConvertRotationToActorSpace(CameraManager->GetCameraRotation(), Gate, Target));
+  View->SetWorldLocation(UTool::ConvertLocationToActorSpace(CameraManager->GetCameraLocation(), this, Target));
+  View->SetWorldRotation(UTool::ConvertRotationToActorSpace(CameraManager->GetCameraRotation(), this, Target));
 
-  View->ClipPlaneNormal = -Target->GetActorUpVector();
+  View->ClipPlaneNormal = Target->GetActorForwardVector();
   View->ClipPlaneBase = Target->GetActorLocation() + (View->ClipPlaneNormal * 0.5f);
   View->CustomProjectionMatrix = GetCameraProjectionMatrix();
   
   View->CaptureScene();
-}
-
-FVector APortal::ConvertLocationToActorSpace(const FVector& Location, UStaticMeshComponent* SourceComponent, AActor* TargetActor) const
-{
-  if (SourceComponent == nullptr || TargetActor == nullptr)
-  {
-    return FVector::ZeroVector;
-  }
-
-  FVector Direction = Location - SourceComponent->GetComponentLocation();
-
-  return TargetActor->GetActorLocation()
-    + FVector::DotProduct(Direction, SourceComponent->GetForwardVector()) * TargetActor->GetActorForwardVector()
-    + FVector::DotProduct(Direction, SourceComponent->GetRightVector()) * TargetActor->GetActorRightVector()
-    + FVector::DotProduct(Direction, SourceComponent->GetUpVector()) * TargetActor->GetActorUpVector();
-}
-
-FVector APortal::ConvertLocationToActorSpace(const FVector& Location, AActor* SourceActor, AActor* TargetActor) const
-{
-  if (SourceActor == nullptr || TargetActor == nullptr)
-  {
-    return FVector::ZeroVector;
-  }
-
-  FVector Direction = Location - SourceActor->GetActorLocation();
-
-  return TargetActor->GetActorLocation()
-    + FVector::DotProduct(Direction, SourceActor->GetActorForwardVector()) * TargetActor->GetActorForwardVector()
-    + FVector::DotProduct(Direction, SourceActor->GetActorRightVector()) * TargetActor->GetActorRightVector()
-    + FVector::DotProduct(Direction, SourceActor->GetActorUpVector()) * TargetActor->GetActorUpVector();
-}
-
-FRotator APortal::ConvertRotationToActorSpace(const FRotator& Rotation, UStaticMeshComponent* SourceComponent, AActor* TargetActor) const
-{
-  if (SourceComponent == nullptr || TargetActor == nullptr)
-  {
-    return FRotator::ZeroRotator;
-  }
-
-  return (
-    TargetActor->GetActorTransform().GetRotation()
-    * SourceComponent->GetComponentTransform().GetRotation().Inverse()
-    * FQuat{Rotation}
-  ).Rotator();
-}
-
-FRotator APortal::ConvertRotationToActorSpace(const FRotator& Rotation, AActor* SourceActor, AActor* TargetActor) const
-{
-  if (SourceActor == nullptr || TargetActor == nullptr)
-  {
-    return FRotator::ZeroRotator;
-  }
-
-  return (
-    TargetActor->GetActorTransform().GetRotation()
-    * SourceActor->GetActorTransform().GetRotation().Inverse()
-    * FQuat{Rotation}
-  ).Rotator();
 }
 
 FMatrix APortal::GetCameraProjectionMatrix() const
@@ -224,72 +152,4 @@ UTextureRenderTarget2D* APortal::GeneratePortalTexture()
   PortalTexture->UpdateResource();
 
   return PortalTexture;
-}
-
-bool APortal::IsPointCrossingPortal(const FVector& Point, const FVector& PortalLocation, const FVector& PortalNormal)
-{
-  const auto PortalPlane = FPlane{PortalLocation, PortalNormal};
-
-  return DoesIntersect(LastPosition, Point, PortalPlane) && !IsInFront(Point, PortalPlane) && LastInFront;
-}
-
-bool APortal::IsInFront(const FVector& Point, const FPlane& PortalPlane) const
-{
-  return PortalPlane.PlaneDot(Point) >= 0;
-}
-
-bool APortal::DoesIntersect(const FVector& Start, const FVector& End, const FPlane& PortalPlane) const
-{
-  auto IntersectionPoint = FVector{};
-  return FMath::SegmentPlaneIntersection(Start, End, PortalPlane, IntersectionPoint);
-}
-
-void APortal::TeleportActor(AActor* ActorToTeleport)
-{
-  if (ActorToTeleport == nullptr || Target == nullptr)
-  {
-    return;
-  }
-
-  FVector SavedVelocity = FVector::ZeroVector;
-  ACharacter* Character = nullptr;
-
-  if (ActorToTeleport->IsA(ACharacter::StaticClass()))
-  {
-    Character = Cast<ACharacter>(ActorToTeleport);
-    SavedVelocity = Character->GetCharacterMovement()->Velocity;
-  }
-
-  auto HitResult = FHitResult{};
-  auto NewLocation = ConvertLocationToActorSpace(ActorToTeleport->GetActorLocation(), this, Target);
-  
-  ActorToTeleport->SetActorLocation(
-    NewLocation,
-    false,
-    &HitResult,
-    ETeleportType::TeleportPhysics
-  );
-  ActorToTeleport->SetActorRotation(ConvertRotationToActorSpace(ActorToTeleport->GetActorRotation(), this, Target));
-
-  if (Character != nullptr)
-  {
-    auto Controller = Character->GetController();
-
-    if (Controller != nullptr)
-    {
-      Controller->SetControlRotation(ConvertRotationToActorSpace(Controller->GetControlRotation(), this, Target));
-    }
-
-    FVector Dots{
-      FVector::DotProduct(SavedVelocity, GetActorForwardVector()),
-      FVector::DotProduct(SavedVelocity, GetActorRightVector()),
-      FVector::DotProduct(SavedVelocity, GetActorUpVector())
-    };
-
-    Character->GetCharacterMovement()->Velocity = Dots.X * Target->GetActorForwardVector()
-      + Dots.Y * Target->GetActorRightVector()
-      + Dots.Z * Target->GetActorUpVector();
-  }
-
-  LastPosition = NewLocation;
 }
