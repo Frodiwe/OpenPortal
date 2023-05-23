@@ -10,6 +10,7 @@
 UPortalCaptureComponent::UPortalCaptureComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+  
   // Requered to have TG_PostUpdateWork tick group to remove capture render lag
   PrimaryComponentTick.TickGroup = TG_PostUpdateWork;
 

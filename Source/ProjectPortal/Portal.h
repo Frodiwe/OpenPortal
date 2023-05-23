@@ -15,30 +15,16 @@ protected:
   UPROPERTY()
   class USceneComponent* PortalRoot;
 
-  UPROPERTY()
-  class APlayerCameraManager* PlayerCameraManager;
-
   UPROPERTY(EditAnywhere)
   class AActor* Target;
-
-  UPROPERTY(EditAnywhere, BlueprintReadWrite)
-  class USceneCaptureComponent2D* View;
  
   UPROPERTY()
   class UTeleportationComponent* Teleportation;
 
-  UPROPERTY(BlueprintReadWrite)
+  UPROPERTY(EditAnywhere, BlueprintReadWrite)
   class UPortalCaptureComponent* PortalCapture;
 
   FMatrix GetCameraProjectionMatrix() const;
-
-  class APlayerCameraManager* GetPlayerCameraManager();
-
-  void SetupView();
-
-  void CutCurrentFrame();
-
-  void UpdateView(class APlayerCameraManager* PlayerCamera);
 
   virtual void BeginPlay() override;
 
