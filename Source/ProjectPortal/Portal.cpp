@@ -9,27 +9,31 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Tool.h"
 #include "TeleportationComponent.h"
+#include "PortalCaptureComponent.h"
 
 APortal::APortal()
 {
 	PrimaryActorTick.bCanEverTick = true;
-  PrimaryActorTick.TickGroup = TG_PostUpdateWork;
+  // Requered to have TG_PostPhysics (essentialy not TG_PostUpdateWork) tick group to remove teleportation lag
+  PrimaryActorTick.TickGroup = TG_PostPhysics;
 
   PortalRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PortalRoot"));
   SetRootComponent(PortalRoot);
 
-  View = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCapture"));
-  View->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+  // View = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCapture"));
+  // View->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
   Teleportation = CreateDefaultSubobject<UTeleportationComponent>(TEXT("Teleportation"));
+  PortalCapture = CreateDefaultSubobject<UPortalCaptureComponent>(TEXT("Capture"));
 
-  SetupView();
+  // SetupView();
 }
 
 void APortal::SetupView()
 {
   View->bCaptureEveryFrame = false;
   View->bCaptureOnMovement = false;
+
   // Force bigger LODs for faster computations
   View->LODDistanceFactor = 3;
   
@@ -57,6 +61,8 @@ void APortal::SetupView()
 void APortal::BeginPlay()
 {
 	Super::BeginPlay();
+
+  PortalCapture->Target = Target;
 }
 
 void APortal::Tick(float DeltaTime)
@@ -70,14 +76,22 @@ void APortal::Tick(float DeltaTime)
     return;
   }
 
-  UpdateView(GetPlayerCameraManager());
-
   if (Teleportation->HasCrossedSinceLastTracked(Character->GetActorLocation()))
   {
+    // CutCurrentFrame();
     Teleportation->Teleport(Character, Target);
   }
 
   Teleportation->UpdateTracking(Character);
+
+  // UpdateView(GetPlayerCameraManager());
+}
+
+void APortal::CutCurrentFrame()
+{
+  UE_LOG(LogTemp, Warning, TEXT("Cutting this frame"));
+  
+  View->bCameraCutThisFrame = true;
 }
 
 void APortal::UpdateView(APlayerCameraManager* CameraManager)

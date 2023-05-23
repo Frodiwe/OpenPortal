@@ -16,4 +16,7 @@ public:
 
   UFUNCTION(BlueprintCallable)
   static FRotator ConvertRotationToActorSpace(const FRotator& Rotation, class AActor* SourceActor, AActor* TargetActor);
+
+  UFUNCTION(BlueprintCallable)
+  static FMatrix GetCameraProjectionMatrix(class ULocalPlayer* Player);
 };

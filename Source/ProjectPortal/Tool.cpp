@@ -29,3 +29,18 @@ FRotator UTool::ConvertRotationToActorSpace(const FRotator& Rotation, AActor* So
     * FQuat{Rotation}
   ).Rotator();
 }
+
+FMatrix UTool::GetCameraProjectionMatrix(ULocalPlayer* Player)
+{
+  auto ProjectionMatrix = FMatrix{};
+
+  if (Player != nullptr)
+  {
+    FSceneViewProjectionData PlayerProjectionData;
+    Player->GetProjectionData(Player->ViewportClient->Viewport, PlayerProjectionData);
+
+    ProjectionMatrix = PlayerProjectionData.ProjectionMatrix;
+  }
+
+  return ProjectionMatrix;
+}

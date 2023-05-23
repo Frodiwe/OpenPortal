@@ -27,11 +27,16 @@ protected:
   UPROPERTY()
   class UTeleportationComponent* Teleportation;
 
+  UPROPERTY(BlueprintReadWrite)
+  class UPortalCaptureComponent* PortalCapture;
+
   FMatrix GetCameraProjectionMatrix() const;
 
   class APlayerCameraManager* GetPlayerCameraManager();
 
   void SetupView();
+
+  void CutCurrentFrame();
 
   void UpdateView(class APlayerCameraManager* PlayerCamera);
 
