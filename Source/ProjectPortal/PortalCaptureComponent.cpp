@@ -22,9 +22,13 @@ void UPortalCaptureComponent::SetupCapture(USceneCaptureComponent2D* view)
 {
   view->bCaptureEveryFrame = false;
   view->bCaptureOnMovement = false;
+  
+  // Should be enabled for post process to work correctly (when bCaptureEveryFrame is false)
+  // Pips on the Internet said that it seems like engine issue
+  view->bAlwaysPersistRenderingState = true;
 
   // Force bigger LODs for faster computations
-  view->LODDistanceFactor = 3;
+  view->LODDistanceFactor = 0;
   
   view->TextureTarget = nullptr;
   view->bEnableClipPlane = true;
