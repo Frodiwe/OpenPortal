@@ -31,7 +31,7 @@ void UReplicationComponent::Add(AActor *Source, AActor* ReplicationTarget)
 
 void UReplicationComponent::Remove(AActor* Actor)
 {
-  Units.RemoveAll([&](const auto& Unit) { return Unit.Source == Actor; });
+  Units.RemoveAll([&](const auto& Unit) { return Unit.Source == Actor && Unit.Copy->Destroy(); });
 }
 
 void UReplicationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
