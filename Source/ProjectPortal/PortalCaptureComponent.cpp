@@ -28,7 +28,7 @@ void UPortalCaptureComponent::SetupCapture(USceneCaptureComponent2D* view)
   view->bAlwaysPersistRenderingState = true;
 
   // Force bigger LODs for faster computations
-  view->LODDistanceFactor = 0;
+  view->LODDistanceFactor = 3;
   
   view->TextureTarget = nullptr;
   view->bEnableClipPlane = true;

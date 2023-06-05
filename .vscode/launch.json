@@ -88,7 +88,7 @@
 			"name": "Generate Project Files",
 			"type": "coreclr",
 			"request": "launch",
-			"program": "/Users/Shared/Epic Games/UE_5.2/Engine/Build/BatchFiles/RunUBT.bat",
+			"program": "/Users/Shared/Epic Games/UE_5.2/Engine/Build/BatchFiles/Mac/GenerateProjectFiles.sh",
 			"args": [
 				"-projectfiles",
 				"-vscode",

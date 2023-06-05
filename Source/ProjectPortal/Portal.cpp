@@ -9,6 +9,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Tool.h"
 #include "TeleportationComponent.h"
+#include "ReplicationComponent.h"
 #include "PortalCaptureComponent.h"
 
 APortal::APortal()
@@ -21,7 +22,11 @@ APortal::APortal()
   PortalRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PortalRoot"));
   SetRootComponent(PortalRoot);
 
+  PortalArea = CreateDefaultSubobject<UBoxComponent>(TEXT("PortalArea"));
+  PortalArea->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
   Teleportation = CreateDefaultSubobject<UTeleportationComponent>(TEXT("Teleportation"));
+  Replication = CreateDefaultSubobject<UReplicationComponent>(TEXT("Replication"));
   PortalCapture = CreateDefaultSubobject<UPortalCaptureComponent>(TEXT("Capture"));
 }
 
@@ -30,6 +35,9 @@ void APortal::BeginPlay()
 	Super::BeginPlay();
 
   PortalCapture->Target = Target;
+
+  PortalArea->OnComponentBeginOverlap.AddDynamic(this, &APortal::OnBeginOverlap);
+  PortalArea->OnComponentEndOverlap.AddDynamic(this, &APortal::OnEndOverlap);
 }
 
 void APortal::Tick(float DeltaTime)
@@ -38,7 +46,7 @@ void APortal::Tick(float DeltaTime)
 
   auto Character = GetWorld()->GetFirstPlayerController()->GetCharacter();
 
-  if (Character == nullptr)
+  if (Character == nullptr || !IsPointInPortalArea(Character->GetActorLocation()))
   {
     return;
   }
@@ -50,6 +58,26 @@ void APortal::Tick(float DeltaTime)
   }
 
   Teleportation->UpdateTracking(Character);
+}
+
+void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+  if (OtherActor->IsA<ACharacter>())
+  {
+    return;
+  }
+
+  Replication->Add(OtherActor, Target);
+}
+
+void APortal::OnEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+  if (OtherActor->IsA<ACharacter>())
+  {
+    return;
+  }
+
+  Replication->Remove(OtherActor);
 }
 
 FMatrix APortal::GetCameraProjectionMatrix() const
@@ -66,6 +94,11 @@ FMatrix APortal::GetCameraProjectionMatrix() const
   }
 
   return ProjectionMatrix;
+}
+
+bool APortal::IsPointInPortalArea(const FVector& Point) const
+{
+  return UKismetMathLibrary::IsPointInBox(Point, PortalArea->GetComponentLocation(), PortalArea->GetScaledBoxExtent());
 }
 
 UTextureRenderTarget2D* APortal::GeneratePortalTexture()
