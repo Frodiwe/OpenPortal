@@ -69,7 +69,7 @@ void UPortalCaptureComponent::UpdateView(APlayerCameraManager* CameraManager, AA
   View->SetWorldRotation(UTool::ConvertRotationToActorSpace(CameraManager->GetCameraRotation(), GetOwner(), ViewTarget));
 
   View->ClipPlaneNormal = ViewTarget->GetActorForwardVector();
-  View->ClipPlaneBase = ViewTarget->GetActorLocation() + (View->ClipPlaneNormal * 0.5f);
+  View->ClipPlaneBase = ViewTarget->GetActorLocation() - View->ClipPlaneNormal;
   View->CustomProjectionMatrix = UTool::GetCameraProjectionMatrix(GetWorld()->GetFirstPlayerController()->GetLocalPlayer());
   
   View->CaptureScene();
