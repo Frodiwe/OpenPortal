@@ -6,7 +6,40 @@
 
 
 UTeleportationComponent::UTeleportationComponent()
-{ }
+{
+  PrimaryComponentTick.bCanEverTick = true;
+  PrimaryComponentTick.TickGroup = TG_PostPhysics;
+}
+
+void UTeleportationComponent::Track(AActor *Actor)
+{
+  Tracked.Add(FTeleportationUnit{
+    .Subject = Actor,
+    .LastPosition = FVector::ZeroVector,
+    .LastInFront = false
+  });
+}
+
+void UTeleportationComponent::Untrack(AActor *Actor)
+{
+  Tracked.RemoveAll([&](const auto& Unit) { return Unit.Subject == Actor; });
+}
+
+void UTeleportationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
+{
+  Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+  for (auto& Unit : Tracked)
+  {
+    if (HasCrossedSinceLastTracked(Unit))
+    {
+      // PortalCapture->CutCurrentFrame();
+      Teleport(Unit.Subject->IsA<ACharacter>() ? Cast<ACharacter>(Unit.Subject) : Unit.Subject, Target);
+    }
+
+    UpdateTracking(Unit);
+  }
+}
 
 FPlane UTeleportationComponent::GetOwnerPlane() const
 {
@@ -24,14 +57,9 @@ bool UTeleportationComponent::DoesIntersect(const FVector& Start, const FVector&
   return FMath::SegmentPlaneIntersection(Start, End, PortalPlane, IntersectionPoint);
 }
 
-bool UTeleportationComponent::IsPointCrossingPlane(const FVector& Point, const FPlane& PortalPlane)
+bool UTeleportationComponent::HasCrossedSinceLastTracked(const FTeleportationUnit& Unit)
 {
-  return DoesIntersect(LastPosition, Point, PortalPlane) && !IsInFront(Point, PortalPlane) && LastInFront;
-}
-
-bool UTeleportationComponent::HasCrossedSinceLastTracked(const FVector &CurrentLocation)
-{
-  return IsPointCrossingPlane(CurrentLocation, GetOwnerPlane());
+  return DoesIntersect(Unit.LastPosition, Unit.Subject->GetActorLocation(), GetOwnerPlane()) && !IsInFront(Unit.Subject->GetActorLocation(), GetOwnerPlane()) && Unit.LastInFront;
 }
 
 void UTeleportationComponent::Teleport(AActor* Subject, AActor* TeleportationTarget)
@@ -44,6 +72,8 @@ void UTeleportationComponent::Teleport(AActor* Subject, AActor* TeleportationTar
     ETeleportType::TeleportPhysics
   );
   Subject->SetActorRotation(UTool::ConvertRotationToActorSpace(Subject->GetActorRotation(), GetOwner(), TeleportationTarget));
+
+  OnActorTeleported.Broadcast(Subject);
 }
 
 void UTeleportationComponent::Teleport(ACharacter* Subject, AActor* TeleportationTarget)
@@ -51,11 +81,6 @@ void UTeleportationComponent::Teleport(ACharacter* Subject, AActor* Teleportatio
   FVector SavedVelocity = Subject->GetCharacterMovement()->Velocity;
 
   Teleport(Cast<AActor>(Subject), TeleportationTarget);
-
-  if (Subject == nullptr)
-  {
-    return;
-  }
 
   if (auto Controller = Subject->GetController(); Controller != nullptr)
   {
@@ -68,8 +93,8 @@ void UTeleportationComponent::Teleport(ACharacter* Subject, AActor* Teleportatio
     + (SavedVelocity | GetOwner()->GetActorUpVector()) * TeleportationTarget->GetActorUpVector();
 }
 
-void UTeleportationComponent::UpdateTracking(AActor* TrackedActor)
+void UTeleportationComponent::UpdateTracking(FTeleportationUnit& Unit)
 {
-  LastInFront = IsInFront(TrackedActor->GetActorLocation(), GetOwnerPlane());
-  LastPosition = TrackedActor->GetActorLocation();
+  Unit.LastInFront = IsInFront(Unit.Subject->GetActorLocation(), GetOwnerPlane());
+  Unit.LastPosition = Unit.Subject->GetActorLocation();
 }

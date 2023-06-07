@@ -8,42 +8,56 @@
 #include "TeleportationComponent.generated.h"
 
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FActorTeleported, AActor*);
+
+
+USTRUCT()
+struct FTeleportationUnit
+{
+  GENERATED_BODY()
+
+  UPROPERTY()
+	class AActor* Subject;
+
+  FVector LastPosition = FVector::Zero();
+  
+  bool LastInFront = false;
+};
+
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTPORTAL_API UTeleportationComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-private:
-  FVector LastPosition = FVector::Zero();
-  
-  bool LastInFront = false;
-
 protected:
+  UPROPERTY(EditAnywhere)
+  TArray<FTeleportationUnit> Tracked;
+
   FPlane GetOwnerPlane() const;
 
   bool IsInFront(const FVector& Point, const FPlane& PortalPlane) const;
 
   bool DoesIntersect(const FVector& Start, const FVector& End, const FPlane& PortalPlane) const;
 
-  bool IsPointCrossingPlane(const FVector& Point, const FPlane& PortalPlane);
+  void UpdateTracking(FTeleportationUnit& Unit);
 
-public:
-  UTeleportationComponent();
-
-  bool HasCrossedSinceLastTracked(const FVector& CurrentLocation);
+  bool HasCrossedSinceLastTracked(const FTeleportationUnit& Unit);
 
   void Teleport(class AActor* Subject, class AActor* TeleportationTarget);
   void Teleport(class ACharacter* Subject, class AActor* TeleportationTarget);
 
-  void UpdateTracking(class AActor* TrackedActor);
+public:
+  UPROPERTY()
+  class AActor* Target;
 
-  void Log(AActor* ActorToTeleport) const
-  {
-    UE_LOG(LogTemp, Warning, TEXT("does intersect: %s"), DoesIntersect(LastPosition, ActorToTeleport->GetActorLocation(), GetOwnerPlane()) ? *FString{"true"} : *FString{"false"});
-    UE_LOG(LogTemp, Warning, TEXT("\tlast position: %s"), *LastPosition.ToString());
-    UE_LOG(LogTemp, Warning, TEXT("\tcurr position: %s"), *ActorToTeleport->GetActorLocation().ToString());
-    UE_LOG(LogTemp, Warning, TEXT("\tportal plane: %s"), *GetOwnerPlane().ToString());
-    UE_LOG(LogTemp, Warning, TEXT("is in front: %s"), IsInFront(ActorToTeleport->GetActorLocation(), GetOwnerPlane()) ? *FString{"true"} : *FString{"false"});
-    UE_LOG(LogTemp, Warning, TEXT("last in front: %s"), LastInFront ? *FString{"true"} : *FString{"false"});
-  }
+  FActorTeleported OnActorTeleported;
+
+  UTeleportationComponent();
+
+  void Track(class AActor* Actor);
+
+  void Untrack(class AActor* Actor);
+
+  virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction);
 };

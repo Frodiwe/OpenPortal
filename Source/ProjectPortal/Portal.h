@@ -21,7 +21,7 @@ protected:
   UPROPERTY(EditAnywhere)
   class AActor* Target;
  
-  UPROPERTY()
+  UPROPERTY(EditAnywhere)
   class UTeleportationComponent* Teleportation;
 
   UPROPERTY(EditAnywhere)
@@ -47,6 +47,4 @@ public:
 
   UFUNCTION(BlueprintCallable)
   UTextureRenderTarget2D* GeneratePortalTexture();
-
-	virtual void Tick(float DeltaTime) override;
 };

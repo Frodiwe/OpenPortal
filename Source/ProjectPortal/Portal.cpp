@@ -14,11 +14,6 @@
 
 APortal::APortal()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
-  // Requered to have TG_PostPhysics (essentialy not TG_PostUpdateWork) tick group to remove teleportation lag
-  PrimaryActorTick.TickGroup = TG_PostPhysics;
-
   PortalRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PortalRoot"));
   SetRootComponent(PortalRoot);
 
@@ -38,32 +33,19 @@ void APortal::BeginPlay()
 
   PortalArea->OnComponentBeginOverlap.AddDynamic(this, &APortal::OnBeginOverlap);
   PortalArea->OnComponentEndOverlap.AddDynamic(this, &APortal::OnEndOverlap);
-}
 
-void APortal::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-  auto Character = GetWorld()->GetFirstPlayerController()->GetCharacter();
-
-  if (Character == nullptr || !IsPointInPortalArea(Character->GetActorLocation()))
-  {
-    return;
-  }
-
-  if (Teleportation->HasCrossedSinceLastTracked(Character->GetActorLocation()))
-  {
-    // PortalCapture->CutCurrentFrame();
-    Teleportation->Teleport(Character, Target);
-  }
-
-  Teleportation->UpdateTracking(Character);
+  Teleportation->Target = Target;
+  Teleportation->OnActorTeleported.AddLambda([&](const auto& Actor) {
+    // Replication->Swap(Actor);
+  });
 }
 
 void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
   if (OtherActor->IsA<ACharacter>())
   {
+    Teleportation->Track(OtherActor);
+
     return;
   }
 
@@ -74,6 +56,8 @@ void APortal::OnEndOverlap(class UPrimitiveComponent* OverlappedComp, class AAct
 {
   if (OtherActor->IsA<ACharacter>())
   {
+    Teleportation->Untrack(OtherActor);
+    
     return;
   }
 

@@ -36,6 +36,8 @@ void UReplicationComponent::Remove(AActor* Actor)
 
 void UReplicationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
+  Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+  
   for (const auto& Unit : Units) {
     Unit.Copy->SetActorLocation(UTool::ConvertLocationToActorSpace(Unit.Source->GetActorLocation(), GetOwner(), Unit.Target));
     Unit.Copy->SetActorRotation(UTool::ConvertRotationToActorSpace(Unit.Source->GetActorRotation(), GetOwner(), Unit.Target));

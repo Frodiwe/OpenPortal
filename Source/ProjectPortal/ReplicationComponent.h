@@ -22,6 +22,7 @@ struct FReplicationUnit
   class AActor* Target;
 };
 
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTPORTAL_API UReplicationComponent : public UActorComponent
 {
