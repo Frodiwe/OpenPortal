@@ -34,41 +34,35 @@ bool UTeleportationComponent::HasCrossedSinceLastTracked(const FVector &CurrentL
   return IsPointCrossingPlane(CurrentLocation, GetOwnerPlane());
 }
 
-void UTeleportationComponent::Teleport(AActor* ActorToTeleport, AActor* TeleportationTarget)
+void UTeleportationComponent::Teleport(AActor* Subject, AActor* TeleportationTarget)
 {
-  if (ActorToTeleport == nullptr || TeleportationTarget == nullptr)
-  {
-    return;
-  }
-
-  FVector SavedVelocity = FVector::ZeroVector;
-  ACharacter* Character = Cast<ACharacter>(ActorToTeleport);
-
-  if (Character != nullptr)
-  {
-    SavedVelocity = Character->GetCharacterMovement()->Velocity;
-  }
-
   auto HitResult = FHitResult{};
-  ActorToTeleport->SetActorLocation(
-    UTool::ConvertLocationToActorSpace(ActorToTeleport->GetActorLocation(), GetOwner(), TeleportationTarget),
+  Subject->SetActorLocation(
+    UTool::ConvertLocationToActorSpace(Subject->GetActorLocation(), GetOwner(), TeleportationTarget),
     false,
     &HitResult,
     ETeleportType::TeleportPhysics
   );
-  ActorToTeleport->SetActorRotation(UTool::ConvertRotationToActorSpace(ActorToTeleport->GetActorRotation(), GetOwner(), TeleportationTarget));
+  Subject->SetActorRotation(UTool::ConvertRotationToActorSpace(Subject->GetActorRotation(), GetOwner(), TeleportationTarget));
+}
 
-  if (Character == nullptr)
+void UTeleportationComponent::Teleport(ACharacter* Subject, AActor* TeleportationTarget)
+{
+  FVector SavedVelocity = Subject->GetCharacterMovement()->Velocity;
+
+  Teleport(Cast<AActor>(Subject), TeleportationTarget);
+
+  if (Subject == nullptr)
   {
     return;
   }
 
-  if (auto Controller = Character->GetController(); Controller != nullptr)
+  if (auto Controller = Subject->GetController(); Controller != nullptr)
   {
     Controller->SetControlRotation(UTool::ConvertRotationToActorSpace(Controller->GetControlRotation(), GetOwner(), TeleportationTarget));
   }
 
-  Character->GetCharacterMovement()->Velocity =
+  Subject->GetCharacterMovement()->Velocity =
       (SavedVelocity | GetOwner()->GetActorForwardVector()) * TeleportationTarget->GetActorForwardVector()
     + (SavedVelocity | GetOwner()->GetActorRightVector()) * TeleportationTarget->GetActorRightVector()
     + (SavedVelocity | GetOwner()->GetActorUpVector()) * TeleportationTarget->GetActorUpVector();

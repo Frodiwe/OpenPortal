@@ -32,7 +32,8 @@ public:
 
   bool HasCrossedSinceLastTracked(const FVector& CurrentLocation);
 
-  void Teleport(class AActor* ActorToTeleport, class AActor* TeleportationTarget);
+  void Teleport(class AActor* Subject, class AActor* TeleportationTarget);
+  void Teleport(class ACharacter* Subject, class AActor* TeleportationTarget);
 
   void UpdateTracking(class AActor* TrackedActor);
 

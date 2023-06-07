@@ -53,7 +53,7 @@ void APortal::Tick(float DeltaTime)
 
   if (Teleportation->HasCrossedSinceLastTracked(Character->GetActorLocation()))
   {
-    // Teleportation->CutCurrentFrame();
+    // PortalCapture->CutCurrentFrame();
     Teleportation->Teleport(Character, Target);
   }
 
