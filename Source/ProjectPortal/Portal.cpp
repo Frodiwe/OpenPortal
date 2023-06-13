@@ -42,10 +42,10 @@ void APortal::BeginPlay()
 
 void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+  Teleportation->Track(OtherActor);
+  
   if (OtherActor->IsA<ACharacter>())
   {
-    Teleportation->Track(OtherActor);
-
     return;
   }
 
@@ -54,10 +54,10 @@ void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AA
 
 void APortal::OnEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+  Teleportation->Untrack(OtherActor);
+
   if (OtherActor->IsA<ACharacter>())
   {
-    Teleportation->Untrack(OtherActor);
-    
     return;
   }
 
