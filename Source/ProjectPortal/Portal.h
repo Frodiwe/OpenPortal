@@ -20,9 +20,6 @@ protected:
 
   UPROPERTY(EditAnywhere)
   class AActor* Target;
- 
-  UPROPERTY(EditAnywhere)
-  class UTeleportationComponent* Teleportation;
 
   UPROPERTY(EditAnywhere)
   class UReplicationComponent* Replication;
@@ -38,12 +35,20 @@ protected:
 
   FMatrix GetCameraProjectionMatrix() const;
 
-  bool IsPointInPortalArea(const FVector& Point) const;
-
   virtual void BeginPlay() override;
 
 public:
 	APortal();
+
+  FPlane GetPlane() const
+  {
+    return {GetActorLocation(), -GetActorForwardVector()};
+  }
+
+  AActor* GetTarget() const
+  {
+    return Target;
+  }
 
   UFUNCTION(BlueprintCallable)
   UTextureRenderTarget2D* GeneratePortalTexture();

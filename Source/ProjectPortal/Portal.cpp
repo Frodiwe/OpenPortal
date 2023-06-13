@@ -20,7 +20,6 @@ APortal::APortal()
   PortalArea = CreateDefaultSubobject<UBoxComponent>(TEXT("PortalArea"));
   PortalArea->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
-  Teleportation = CreateDefaultSubobject<UTeleportationComponent>(TEXT("Teleportation"));
   Replication = CreateDefaultSubobject<UReplicationComponent>(TEXT("Replication"));
   PortalCapture = CreateDefaultSubobject<UPortalCaptureComponent>(TEXT("Capture"));
 }
@@ -33,17 +32,10 @@ void APortal::BeginPlay()
 
   PortalArea->OnComponentBeginOverlap.AddDynamic(this, &APortal::OnBeginOverlap);
   PortalArea->OnComponentEndOverlap.AddDynamic(this, &APortal::OnEndOverlap);
-
-  Teleportation->Target = Target;
-  Teleportation->OnActorTeleported.AddLambda([&](const auto& Actor) {
-    // Replication->Swap(Actor);
-  });
 }
 
 void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-  Teleportation->Track(OtherActor);
-  
   if (OtherActor->IsA<ACharacter>())
   {
     return;
@@ -54,8 +46,6 @@ void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AA
 
 void APortal::OnEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-  Teleportation->Untrack(OtherActor);
-
   if (OtherActor->IsA<ACharacter>())
   {
     return;
@@ -78,11 +68,6 @@ FMatrix APortal::GetCameraProjectionMatrix() const
   }
 
   return ProjectionMatrix;
-}
-
-bool APortal::IsPointInPortalArea(const FVector& Point) const
-{
-  return UKismetMathLibrary::IsPointInBox(Point, PortalArea->GetComponentLocation(), PortalArea->GetScaledBoxExtent());
 }
 
 UTextureRenderTarget2D* APortal::GeneratePortalTexture()
