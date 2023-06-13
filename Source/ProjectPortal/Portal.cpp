@@ -38,7 +38,7 @@ void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AA
 {
   if (auto TeleportationComponent = OtherActor->GetComponentByClass<UTeleportationComponent>())
   {
-    TeleportationComponent->ActivePortal = this;
+    TeleportationComponent->SetPortal(this);
   }
 
   if (OtherActor->IsA<ACharacter>())
@@ -51,10 +51,10 @@ void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AA
 
 void APortal::OnEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-  // if (auto TeleportationComponent = OtherActor->GetComponentByClass<UTeleportationComponent>())
-  // {
-  //   TeleportationComponent->ActivePortal = nullptr;
-  // }
+  if (auto TeleportationComponent = OtherActor->GetComponentByClass<UTeleportationComponent>())
+  {
+    TeleportationComponent->SetPortal(nullptr);
+  }
 
   if (OtherActor->IsA<ACharacter>())
   {

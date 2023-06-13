@@ -34,8 +34,8 @@ protected:
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
   FTeleportationUnit Tracked;
 
-  UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-  class USphereComponent* AttentionVolume;
+  UPROPERTY(EditAnywhere, BlueprintReadWrite)
+  class APortal* ActivePortal;
 
   bool IsInFront(const FVector& Point, const FPlane& PortalPlane) const;
 
@@ -51,12 +51,11 @@ protected:
   virtual void BeginPlay() override;
 
 public:
-  UPROPERTY(EditAnywhere, BlueprintReadWrite)
-  class APortal* ActivePortal;
-
   FActorTeleported OnActorTeleported;
 
   UTeleportationComponent();
+
+  void SetPortal(APortal* Portal);
 
   virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction);
 };

@@ -12,6 +12,11 @@ UTeleportationComponent::UTeleportationComponent()
   PrimaryComponentTick.TickGroup = TG_PostPhysics;
 }
 
+void UTeleportationComponent::SetPortal(APortal* Portal)
+{
+  ActivePortal = Portal;
+}
+
 void UTeleportationComponent::BeginPlay()
 {
   Super::BeginPlay();
@@ -34,12 +39,13 @@ void UTeleportationComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
   if (HasCrossedSinceLastTracked(Tracked, ActivePortal->GetPlane()))
   {
-    // PortalCapture->CutCurrentFrame();
     Teleport(
       Tracked.Subject->IsA<ACharacter>() ? Cast<ACharacter>(Tracked.Subject) : Tracked.Subject,
       ActivePortal,
       ActivePortal->GetTarget()
     );
+
+    return;
   }
 
   UpdateTracking(Tracked, ActivePortal->GetPlane());
