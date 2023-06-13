@@ -15,7 +15,7 @@ UTeleportationComponent::UTeleportationComponent()
 void UTeleportationComponent::BeginPlay()
 {
   Super::BeginPlay();
-  
+
   Tracked = FTeleportationUnit{
     .Subject = GetOwner(),
     .LastPosition = GetOwner()->GetActorLocation(),

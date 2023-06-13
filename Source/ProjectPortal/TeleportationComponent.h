@@ -11,7 +11,7 @@
 DECLARE_MULTICAST_DELEGATE_OneParam(FActorTeleported, AActor*);
 
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FTeleportationUnit
 {
   GENERATED_BODY()
@@ -31,8 +31,11 @@ class PROJECTPORTAL_API UTeleportationComponent : public UActorComponent
 	GENERATED_BODY()
 
 protected:
-  UPROPERTY(VisibleAnywhere)
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
   FTeleportationUnit Tracked;
+
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+  class USphereComponent* AttentionVolume;
 
   bool IsInFront(const FVector& Point, const FPlane& PortalPlane) const;
 

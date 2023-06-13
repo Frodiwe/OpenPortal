@@ -36,6 +36,11 @@ void APortal::BeginPlay()
 
 void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+  if (auto TeleportationComponent = OtherActor->GetComponentByClass<UTeleportationComponent>())
+  {
+    TeleportationComponent->ActivePortal = this;
+  }
+
   if (OtherActor->IsA<ACharacter>())
   {
     return;
@@ -46,6 +51,11 @@ void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AA
 
 void APortal::OnEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+  // if (auto TeleportationComponent = OtherActor->GetComponentByClass<UTeleportationComponent>())
+  // {
+  //   TeleportationComponent->ActivePortal = nullptr;
+  // }
+
   if (OtherActor->IsA<ACharacter>())
   {
     return;
