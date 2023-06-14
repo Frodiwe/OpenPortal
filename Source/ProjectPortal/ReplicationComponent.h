@@ -20,6 +20,11 @@ struct FReplicationUnit
 
   UPROPERTY()
   class AActor* Target;
+
+  void Swap()
+  {
+    std::swap(Source, Copy);
+  }
 };
 
 
@@ -38,6 +43,8 @@ public:
   void Add(class AActor* Source, class AActor* ReplicationTarget);
 
   void Remove(class AActor* AActor);
+
+  void Swap(class AActor* Source);
 
   virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

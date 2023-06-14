@@ -19,4 +19,7 @@ public:
 
   UFUNCTION(BlueprintCallable)
   static FMatrix GetCameraProjectionMatrix(class ULocalPlayer* Player);
+
+  UFUNCTION(BlueprintCallable)
+  static FHitResult Teleport(class AActor* Actor, const FVector& Destination);
 };

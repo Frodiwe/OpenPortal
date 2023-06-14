@@ -44,3 +44,11 @@ FMatrix UTool::GetCameraProjectionMatrix(ULocalPlayer* Player)
 
   return ProjectionMatrix;
 }
+
+FHitResult UTool::Teleport(class AActor* Actor, const FVector& Destination)
+{
+  auto HitResult = FHitResult{};
+  Actor->SetActorLocation(Destination, false, &HitResult, ETeleportType::TeleportPhysics);
+
+  return HitResult;
+}

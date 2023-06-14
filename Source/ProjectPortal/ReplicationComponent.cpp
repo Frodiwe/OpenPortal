@@ -34,12 +34,20 @@ void UReplicationComponent::Remove(AActor* Actor)
   Units.RemoveAll([&](const auto& Unit) { return Unit.Source == Actor && Unit.Copy->Destroy(); });
 }
 
+void UReplicationComponent::Swap(class AActor* Source)
+{
+  if (auto Unit = Units.FindByPredicate([&](const auto& Unit) { return Unit.Source == Source; }))
+  {
+    Unit->Swap();
+  }
+}
+
 void UReplicationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
   Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
   
   for (const auto& Unit : Units) {
-    Unit.Copy->SetActorLocation(UTool::ConvertLocationToActorSpace(Unit.Source->GetActorLocation(), GetOwner(), Unit.Target));
+    UTool::Teleport(Unit.Copy, UTool::ConvertLocationToActorSpace(Unit.Source->GetActorLocation(), GetOwner(), Unit.Target));
     Unit.Copy->SetActorRotation(UTool::ConvertRotationToActorSpace(Unit.Source->GetActorRotation(), GetOwner(), Unit.Target));
   }
 }

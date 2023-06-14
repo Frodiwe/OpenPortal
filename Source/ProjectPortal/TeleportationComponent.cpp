@@ -44,6 +44,7 @@ void UTeleportationComponent::TickComponent(float DeltaTime, ELevelTick TickType
       ActivePortal,
       ActivePortal->GetTarget()
     );
+    OnActorTeleported.Broadcast(Tracked.Subject);
 
     return;
   }
@@ -71,16 +72,8 @@ bool UTeleportationComponent::HasCrossedSinceLastTracked(const FTeleportationUni
 
 void UTeleportationComponent::Teleport(AActor* Subject, AActor* Portal, AActor* TeleportationTarget)
 {
-  auto HitResult = FHitResult{};
-  Subject->SetActorLocation(
-    UTool::ConvertLocationToActorSpace(Subject->GetActorLocation(), Portal, TeleportationTarget),
-    false,
-    &HitResult,
-    ETeleportType::TeleportPhysics
-  );
+  UTool::Teleport(Subject, UTool::ConvertLocationToActorSpace(Subject->GetActorLocation(), Portal, TeleportationTarget));
   Subject->SetActorRotation(UTool::ConvertRotationToActorSpace(Subject->GetActorRotation(), Portal, TeleportationTarget));
-
-  OnActorTeleported.Broadcast(Subject);
 }
 
 void UTeleportationComponent::Teleport(ACharacter* Subject, AActor* Portal, AActor* TeleportationTarget)
