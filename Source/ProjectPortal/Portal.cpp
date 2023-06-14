@@ -14,6 +14,9 @@
 
 APortal::APortal()
 {
+  PrimaryActorTick.bCanEverTick = true;
+  PrimaryActorTick.TickGroup = TG_PostPhysics;
+
   PortalRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PortalRoot"));
   SetRootComponent(PortalRoot);
 
