@@ -21,6 +21,7 @@ void UReplicationComponent::Add(AActor *Source, AActor* ReplicationTarget)
   );
 
   check(Copy);
+  // Copy->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
   
   Units.Emplace(FReplicationUnit{
     .Source = Source,
@@ -36,9 +37,11 @@ void UReplicationComponent::Remove(AActor* Actor)
 
 void UReplicationComponent::Swap(class AActor* Source)
 {
+  UE_LOG(LogTemp, Warning, TEXT("Swapping..."));
   if (auto Unit = Units.FindByPredicate([&](const auto& Unit) { return Unit.Source == Source; }))
   {
     Unit->Swap();
+    UE_LOG(LogTemp, Warning, TEXT("Swap done"));
   }
 }
 

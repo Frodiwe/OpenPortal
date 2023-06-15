@@ -42,9 +42,6 @@ void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AA
   if (auto Teleportation = OtherActor->GetComponentByClass<UTeleportationComponent>())
   {
     Teleportation->SetPortal(this);
-    Teleportation->OnActorTeleported.AddLambda([this](const auto& Actor) {
-      Replication->Swap(Actor);
-    });
   }
 
   if (OtherActor->IsA<ACharacter>())
