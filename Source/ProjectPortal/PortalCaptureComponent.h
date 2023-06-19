@@ -21,8 +21,6 @@ protected:
 
   void SetupCapture(class USceneCaptureComponent2D* View);
 
-  void CutCurrentFrame();
-
   void UpdateView(class APlayerCameraManager* CameraManager, class AActor* ViewTarget);
 
 	virtual void BeginPlay() override;
@@ -32,6 +30,8 @@ public:
   class AActor* Target;
 
   UPortalCaptureComponent();
+
+  void CutCurrentFrame();
 
   UFUNCTION(BlueprintCallable)
   void SetRTT(class UTextureRenderTarget2D* Texture);

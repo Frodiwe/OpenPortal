@@ -29,7 +29,7 @@ APortal::APortal()
 
 void APortal::BeginPlay()
 {
-	Super::BeginPlay();
+  Super::BeginPlay();
 
   PortalCapture->Target = Target;
 
@@ -54,9 +54,9 @@ void APortal::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AA
 
 void APortal::OnEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-  if (auto TeleportationComponent = OtherActor->GetComponentByClass<UTeleportationComponent>())
+  if (auto Teleportation = OtherActor->GetComponentByClass<UTeleportationComponent>())
   {
-    TeleportationComponent->SetPortal(nullptr);
+    Teleportation->SetPortal(nullptr);
   }
 
   if (OtherActor->IsA<ACharacter>())

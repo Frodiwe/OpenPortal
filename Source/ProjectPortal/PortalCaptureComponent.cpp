@@ -42,11 +42,13 @@ void UPortalCaptureComponent::SetupCapture(USceneCaptureComponent2D* view)
   CaptureSettings.bOverride_MotionBlurAmount = true;
   CaptureSettings.bOverride_SceneFringeIntensity = true;
   CaptureSettings.bOverride_ScreenSpaceReflectionQuality = true;
+  CaptureSettings.bOverride_LumenSurfaceCacheResolution = true;
 
   CaptureSettings.AmbientOcclusionQuality = 0.0f;
   CaptureSettings.MotionBlurAmount = 0.0f;
   CaptureSettings.SceneFringeIntensity = 0.0f;
   CaptureSettings.ScreenSpaceReflectionQuality = 0.0f;
+  CaptureSettings.LumenSurfaceCacheResolution = 1.0f;
 
   view->PostProcessSettings = CaptureSettings;
 }

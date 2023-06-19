@@ -72,6 +72,9 @@ bool UTeleportationComponent::HasCrossedSinceLastTracked(const FTeleportationUni
 
 void UTeleportationComponent::Teleport(AActor* Subject, AActor* Portal, AActor* TeleportationTarget)
 {
+  // GetWorld()->GetFirstPlayerController()->PlayerCameraManager->bGameCameraCutThisFrame = true;
+  // UE_LOG(LogTemp, Warning, TEXT("cutting this frame? %s"), GetWorld()->GetFirstPlayerController()->PlayerCameraManager->bGameCameraCutThisFrame);
+  
   UTool::Teleport(Subject, UTool::ConvertLocationToActorSpace(Subject->GetActorLocation(), Portal, TeleportationTarget));
   Subject->SetActorRotation(UTool::ConvertRotationToActorSpace(Subject->GetActorRotation(), Portal, TeleportationTarget));
 }
