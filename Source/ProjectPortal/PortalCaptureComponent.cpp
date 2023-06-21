@@ -53,13 +53,6 @@ void UPortalCaptureComponent::SetupCapture(USceneCaptureComponent2D* view)
   view->PostProcessSettings = CaptureSettings;
 }
 
-void UPortalCaptureComponent::CutCurrentFrame()
-{
-  UE_LOG(LogTemp, Warning, TEXT("Cutting this frame"));
-  
-  View->bCameraCutThisFrame = true;
-}
-
 void UPortalCaptureComponent::UpdateView(APlayerCameraManager* CameraManager, AActor* ViewTarget)
 {
   if (ViewTarget == nullptr)

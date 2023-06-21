@@ -31,8 +31,6 @@ public:
 
   UPortalCaptureComponent();
 
-  void CutCurrentFrame();
-
   UFUNCTION(BlueprintCallable)
   void SetRTT(class UTextureRenderTarget2D* Texture);
 
