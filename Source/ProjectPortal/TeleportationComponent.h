@@ -45,8 +45,8 @@ protected:
 
   bool HasCrossedSinceLastTracked(const FTeleportationUnit& Unit, const FPlane& TeleportationPlane);
 
-  template<typename T>
-  void Teleport(T* Subject, class AActor* Portal, class AActor* TeleportationTarget);
+  void Teleport(class AActor* Subject, class AActor* Portal, class AActor* TeleportationTarget);
+  void TeleportCharacter(class ACharacter* Subject, class AActor* Portal, class AActor* TeleportationTarget);
 
   virtual void BeginPlay() override;
 
@@ -59,6 +59,3 @@ public:
 
   virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction);
 };
-
-template<> void UTeleportationComponent::Teleport(class ACharacter* Subject, class AActor* Portal, class AActor* TeleportationTarget);
-template<> void UTeleportationComponent::Teleport(class AActor* Subject, class AActor* Portal, class AActor* TeleportationTarget);

@@ -37,14 +37,28 @@ void UTeleportationComponent::TickComponent(float DeltaTime, ELevelTick TickType
     return;
   }
 
-  if (HasCrossedSinceLastTracked(Tracked, ActivePortal->GetPlane()))
+  if (
+    auto TrackedOwner = Tracked.Subject->GetOwner();
+    HasCrossedSinceLastTracked(Tracked, ActivePortal->GetPlane()) ||
+    TrackedOwner != nullptr && HasCrossedSinceLastTracked(
+      {
+        .Subject = Tracked.Subject,
+        .LastPosition = TrackedOwner->GetActorLocation(),
+        .LastInFront = IsInFront(TrackedOwner->GetActorLocation(), ActivePortal->GetPlane())
+      },
+      ActivePortal->GetPlane()
+    )
+  )
   {
-    UE_LOG(LogTemp, Warning, TEXT("character? %s"), Tracked.Subject->IsA<ACharacter>() ? TEXT("true") : TEXT("false"));
-    Teleport(
-      Tracked.Subject->IsA<ACharacter>() ? Cast<ACharacter>(Tracked.Subject) : Tracked.Subject,
-      ActivePortal,
-      ActivePortal->GetTarget()
-    );
+    if (auto Character = Cast<ACharacter>(Tracked.Subject))
+    {
+      TeleportCharacter(Character, ActivePortal, ActivePortal->GetTarget());
+    }
+    else
+    {
+      Teleport(Tracked.Subject, ActivePortal, ActivePortal->GetTarget());
+    }
+
     OnActorTeleported.Broadcast(Tracked.Subject);
 
     return;
@@ -71,21 +85,20 @@ bool UTeleportationComponent::HasCrossedSinceLastTracked(const FTeleportationUni
     && Unit.LastInFront;
 }
 
-template<>
 void UTeleportationComponent::Teleport(AActor* Subject, AActor* Portal, AActor* TeleportationTarget)
-{  
+{
   UTool::Teleport(Subject, UTool::ConvertLocationToActorSpace(Subject->GetActorLocation(), Portal, TeleportationTarget));
   Subject->SetActorRotation(UTool::ConvertRotationToActorSpace(Subject->GetActorRotation(), Portal, TeleportationTarget));
 }
 
-template<>
-void UTeleportationComponent::Teleport(ACharacter* Subject, AActor* Portal, AActor* TeleportationTarget)
+void UTeleportationComponent::TeleportCharacter(ACharacter* Subject, AActor* Portal, AActor* TeleportationTarget)
 {
   FVector SavedVelocity = Subject->GetCharacterMovement()->Velocity;
+  
   GetWorld()->GetFirstPlayerController()->PlayerCameraManager->bGameCameraCutThisFrame = true;
   UE_LOG(LogTemp, Warning, TEXT("cutting this frame? %s"), GetWorld()->GetFirstPlayerController()->PlayerCameraManager->bGameCameraCutThisFrame ? TEXT("true") : TEXT("false"));
 
-  Teleport(Cast<AActor>(Subject), Portal, TeleportationTarget);
+  Teleport(Subject, Portal, TeleportationTarget);
 
   if (auto Controller = Subject->GetController(); Controller != nullptr)
   {

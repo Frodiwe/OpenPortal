@@ -32,7 +32,9 @@ void UReplicationComponent::Add(AActor *Source, AActor* ReplicationTarget)
 
 void UReplicationComponent::Remove(AActor* Actor)
 {
-  Units.RemoveAll([&](const auto& Unit) { return Unit.Source == Actor && Unit.Copy->Destroy(); });
+  Units.RemoveAll([&](const auto& Unit) {
+    return Unit.Source == Actor && Unit.Copy->Destroy();
+  });
 }
 
 void UReplicationComponent::Swap(class AActor* Source)
@@ -50,7 +52,7 @@ void UReplicationComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
   Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
   
   for (const auto& Unit : Units) {
-    UTool::Teleport(Unit.Copy, UTool::ConvertLocationToActorSpace(Unit.Source->GetActorLocation(), GetOwner(), Unit.Target));
-    Unit.Copy->SetActorRotation(UTool::ConvertRotationToActorSpace(Unit.Source->GetActorRotation(), GetOwner(), Unit.Target));
+    // UTool::Teleport(Unit.Copy, UTool::ConvertLocationToActorSpace(Unit.Source->GetActorLocation(), GetOwner(), Unit.Target));
+    // Unit.Copy->SetActorRotation(UTool::ConvertRotationToActorSpace(Unit.Source->GetActorRotation(), GetOwner(), Unit.Target));
   }
 }
