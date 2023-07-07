@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Tool.h"
+#include "ReplicationComponent.h"
 
 
 UPortalCaptureComponent::UPortalCaptureComponent()
@@ -72,7 +73,12 @@ void UPortalCaptureComponent::UpdateView(APlayerCameraManager* CameraManager, AA
 
 void UPortalCaptureComponent::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
+
+  if (auto Replication = GetOwner()->GetComponentByClass<UReplicationComponent>())
+  {
+    AddTickPrerequisiteComponent(Replication);
+  }
 }
 
 void UPortalCaptureComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

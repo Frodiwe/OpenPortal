@@ -1,5 +1,6 @@
 #include "ReplicationComponent.h"
 #include "Tool.h"
+#include "PortalCaptureComponent.h"
 
 
 UReplicationComponent::UReplicationComponent()
@@ -21,7 +22,7 @@ void UReplicationComponent::Add(AActor *Source, AActor* ReplicationTarget)
   );
 
   check(Copy);
-  // Copy->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+  Copy->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
   
   Units.Emplace(FReplicationUnit{
     .Source = Source,
@@ -51,8 +52,15 @@ void UReplicationComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 {
   Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
   
-  for (const auto& Unit : Units) {
-    // UTool::Teleport(Unit.Copy, UTool::ConvertLocationToActorSpace(Unit.Source->GetActorLocation(), GetOwner(), Unit.Target));
-    // Unit.Copy->SetActorRotation(UTool::ConvertRotationToActorSpace(Unit.Source->GetActorRotation(), GetOwner(), Unit.Target));
+  if (Units.Num() == 0)
+  {
+    return;
   }
+
+  auto Unit = Units[0];
+
+  // for (const auto& Unit : Units) {
+    UTool::Teleport(Unit.Copy, UTool::ConvertLocationToActorSpace(Unit.Source->GetActorLocation(), GetOwner(), Unit.Target));
+    Unit.Copy->SetActorRotation(UTool::ConvertRotationToActorSpace(Unit.Source->GetActorRotation(), GetOwner(), Unit.Target));
+  // }
 }
